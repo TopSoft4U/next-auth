@@ -1,7 +1,7 @@
 {
   "name": "@topsoft4u/next-auth",
   "description": "Authentication helper for next.js using SWR",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "repository": "https://github.com/TopSoft4U/next-auth",
@@ -37,23 +37,23 @@
   },
   "devDependencies": {
     "@topsoft4u/eslint-config": "^1.0.25",
+    "@types/react": "^17.0.3",
+    "@types/react-dom": "^17.0.3",
+    "@types/react-router-dom": "^5.1.7",
     "eslint": "^7.25.0",
-    "typescript": "^4.2.4",
     "next": "^10.1.3",
-    "swr": "^0.5.5",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-router-dom": "^5.2.0",
-    "@types/react": "^17.0.3",
-    "@types/react-dom": "^17.0.3",
-    "@types/react-router-dom": "^5.1.7"
+    "swr": "^0.5.5",
+    "typescript": "^4.2.4"
   },
   "peerDependencies": {
-    "swr": ">=0.5",
+    "next": ">=10.x",
     "react": ">=17.x",
     "react-dom": ">=17.x",
     "react-router-dom": ">=5.x",
-    "next": ">=10.x"
+    "swr": ">=0.5"
   },
   "eslintConfig": {
     "extends": [
