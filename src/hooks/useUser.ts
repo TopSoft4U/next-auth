@@ -1,60 +1,72 @@
 import {useRouter} from "next/router";
-import {useEffect} from "react";
-import useSWR, {SWRResponse} from "swr";
+import {useCallback, useEffect, useMemo} from "react";
+import useSWR from "swr";
+import {Fetcher} from "swr/dist/types";
 
-type ExpectedUser<T> = T & {
-  id: number
-};
-
-type SwrType<T> = SWRResponse<ExpectedUser<T> | null, any>;
-
-type UseUserProps<T> = {
-  apiUrl: string;
+export type UseUserProps<Data, Error = any> = {
   loginUrl: string;
+  isLoggedIn: (user?: Data) => boolean;
+
+  swrKey?: string,
+  swrFetcher?: Fetcher<Data>,
 
   redirectQueryParam?: string;
 
-  redirectIf?: "GUEST" | "USER" | false;
+  redirectIf?: "GUEST" | "USER" | "NEVER";
   redirectTo?: string;
 };
 
-type UseUserReturn<T> = {
-  user?: SwrType<T>["data"];
-  isLoggedIn: boolean;
-  setUser: SwrType<T>["mutate"];
-};
-
-export const useUser = <T>(
+export const useUserBase = <Data>(
   {
-    apiUrl, loginUrl,
+    swrKey = "auth", swrFetcher,
+    isLoggedIn,
+    loginUrl,
     redirectQueryParam = "redirect",
-    redirectIf = "GUEST", redirectTo = ""
-  }: UseUserProps<T>): UseUserReturn<T> => {
-  const {data: user, mutate: setUser} = useSWR<ExpectedUser<T>>(apiUrl);
+    redirectIf = "NEVER", redirectTo
+  }: UseUserProps<Data>) => {
+  const {data: user, mutate: setUser} = useSWR(swrKey, swrFetcher);
   const {asPath, query, push, isReady} = useRouter();
 
-  const isLoading = user === undefined;
-  const isLoggedIn = !!user?.id;
+  const isLoading = useMemo(() => user === undefined, [user]);
+  const isLoggedInMemo = useMemo(() => isLoggedIn(user), [isLoggedIn, user]);
+
+  // region Redirects
+  const redirectNeeded: boolean = useMemo(() => {
+    // Not ready yet
+    if (!isReady || isLoading)
+      return false;
+
+    // Redirect not needed
+    return redirectIf !== "NEVER";
+  }, [isLoading, isReady, redirectIf]);
+
+  const redirectGuest = useCallback(() => {
+    if (isLoggedInMemo || redirectIf !== "GUEST")
+      return;
+
+    push({
+      pathname: loginUrl,
+      query: {
+        [redirectQueryParam]: asPath
+      }
+    }).then();
+  }, [asPath, isLoggedInMemo, loginUrl, push, redirectIf, redirectQueryParam]);
+
+  const redirectUser = useCallback(() => {
+    if (!isLoggedInMemo || redirectIf !== "USER")
+      return;
+
+    push(query?.[redirectQueryParam]?.toString() || redirectTo || "/").then();
+  }, [isLoggedInMemo, push, query, redirectIf, redirectQueryParam, redirectTo]);
 
   useEffect(() => {
-    if (!isReady || !redirectIf || isLoading)
+    if (!redirectNeeded)
       return;
 
-    if (!isLoggedIn && redirectIf === "GUEST") {
-      push({
-        pathname: loginUrl,
-        query: {
-          [redirectQueryParam]: asPath
-        }
-      });
-      return;
-    }
+    redirectGuest();
+    redirectUser();
+  }, [redirectGuest, redirectNeeded, redirectUser]);
+  // endregion
 
-    if (redirectIf === "USER" && isLoggedIn) {
-      push(query?.redirect?.toString() || redirectTo || "/").then();
-      return;
-    }
-  }, [user, redirectTo, isLoggedIn, query?.redirect, asPath, push, redirectIf, isReady, isLoading, loginUrl, redirectQueryParam]);
-
-  return {user, isLoggedIn, setUser};
+  return {user, isLoggedIn: isLoggedInMemo, setUser};
 };

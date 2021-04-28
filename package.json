@@ -16,7 +16,9 @@
   "license": "MIT",
   "keywords": [
     "TopSoft4U",
-    "OpenAPI"
+    "next.js",
+    "Authentication",
+    "SWR"
   ],
   "author": {
     "name": "Łukasz Kolasa",
