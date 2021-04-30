@@ -16,7 +16,7 @@ export type UseUserProps<Data, Error = any> = {
   redirectTo?: string;
 };
 
-export const useUserBase = <Data>(
+export const useUser = <Data>(
   {
     swrKey = "auth", swrFetcher,
     isLoggedIn,
