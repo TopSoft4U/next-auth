@@ -1,6 +1,9 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "ESNext",
+    "target": "es5",
+    "outDir": "dist/esm",
+    "moduleResolution": "Node",
     "lib": [
       "dom",
       "dom.iterable",
@@ -9,8 +12,6 @@
     "esModuleInterop": true,
     "noEmit": false,
     "rootDir": "src",
-    "outDir": "dist",
-    "target": "es5",
     "declaration": true,
     "sourceMap": true
   },
